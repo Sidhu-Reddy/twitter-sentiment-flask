@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Twitter Sentiment Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- Animated Background -->
+<div class="bg-animation">
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+</div>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="glowing-title">
+            <span class="letter">T</span>
+            <span class="letter">W</span>
+            <span class="letter">I</span>
+            <span class="letter">T</span>
+            <span class="letter">T</span>
+            <span class="letter">E</span>
+            <span class="letter">R</span>
+            <span class="spacer"></span>
+            <span class="letter">S</span>
+            <span class="letter">E</span>
+            <span class="letter">N</span>
+            <span class="letter">T</span>
+            <span class="letter">I</span>
+            <span class="letter">M</span>
+            <span class="letter">E</span>
+            <span class="letter">N</span>
+            <span class="letter">T</span>
+            <span class="spacer"></span>
+            <span class="letter">A</span>
+            <span class="letter">N</span>
+            <span class="letter">A</span>
+            <span class="letter">L</span>
+            <span class="letter">Y</span>
+            <span class="letter">S</span>
+            <span class="letter">I</span>
+            <span class="letter">S</span>
+
+        </h1>
+        
+        <p class="tagline">Understand public opinion using Deep Learning</p>
+
+        <form method="POST" class="search-box">
+            <div class="input-wrapper">
+                <input type="text" name="keyword" placeholder="apple, technology, education…" required>
+                <button type="submit">
+                    <span>Analyze</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
+
+        <div class="trust-badge">
+            ⚡ Powered by Advanced Deep Learning Models
+        </div>
+    </div>
+</section>
+
+{% if summary %}
+
+<section class="status-block fade-in">
+    <div class="status-content">
+        <p class="analyzing-text">
+            Analyzing tweets related to <strong class="keyword-highlight">{{ summary.keyword }}</strong>
+        </p>
+        <div class="confidence-badge">
+            <span class="confidence-label">Model Confidence</span>
+            <span class="confidence-value">{{ summary.Confidence }}%</span>
+        </div>
+    </div>
+</section>
+
+<section class="cards fade-in">
+    <div class="card positive">
+        <div class="card-icon">😊</div>
+        <div class="card-label">Positive</div>
+        <div class="card-value">{{ summary.Positive_pct }}%</div>
+        <div class="card-glow"></div>
+    </div>
+    <div class="card neutral">
+        <div class="card-icon">😐</div>
+        <div class="card-label">Neutral</div>
+        <div class="card-value">{{ summary.Neutral_pct }}%</div>
+        <div class="card-glow"></div>
+    </div>
+    <div class="card negative">
+        <div class="card-icon">😠</div>
+        <div class="card-label">Negative</div>
+        <div class="card-value">{{ summary.Negative_pct }}%</div>
+        <div class="card-glow"></div>
+    </div>
+</section>
+
+<section class="chart-section fade-in">
+    <div class="chart-container">
+        <div class="chart-glass">
+            <canvas id="donutChart"></canvas>
+            <div class="chart-center-label">
+                <span class="chart-label-title">Overall</span>
+                <span class="chart-label-subtitle">Sentiment</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="view-btn">
+    <a href="/tweets" class="explore-btn">
+        <span>Explore detailed tweet analysis</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+    </a>
+</div>
+
+<footer>
+    <div class="footer-content">
+        <span>Model: LSTM</span>
+        <span class="separator">•</span>
+        <span>Dataset: Custom Twitter Corpus</span>
+    </div>
+</footer>
+
+<script>
+// Fade-in animation on scroll
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// Chart
+new Chart(document.getElementById("donutChart"), {
+    type: "doughnut",
+    data: {
+        labels: ["Positive", "Neutral", "Negative"],
+        datasets: [{
+            data: [
+                {{ summary.Positive }},
+                {{ summary.Neutral }},
+                {{ summary.Negative }}
+            ],
+            backgroundColor: [
+                "#22c55e",
+                "#facc15",
+                "#ef4444"
+            ],
+            borderWidth: 0,
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "75%",
+        animation: {
+            animateRotate: true,
+            duration: 2000,
+            easing: "easeOutQuart"
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8,
+                titleFont: { size: 14, weight: 'bold' },
+                bodyFont: { size: 13 }
+            }
+        }
+    }
+});
+</script>
+
+{% endif %}
+
+</body>
+</html>

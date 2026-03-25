@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analyzed Tweets - Twitter Sentiment Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- Animated Background -->
+<div class="bg-animation">
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero hero-small">
+    <div class="hero-content">
+        <h1 class="glowing-title" style="font-size: 48px; letter-spacing: 4px;">
+            Analyzed Tweets
+        </h1>
+
+        <!-- ✅ FIX: Safe keyword display -->
+        <p class="tagline">
+            Topic:
+            <strong class="keyword-highlight">
+                {{ keyword if keyword else "N/A" }}
+            </strong>
+        </p>
+    </div>
+</section>
+
+<!-- Tweets Grid -->
+<div class="tweets">
+    
+    {% if tweets and tweets|length > 0 %}
+    
+        {% for tweet in tweets %}
+        <div class="tweet-card {{ tweet.sentiment.lower() }}">
+            
+            <p>{{ tweet.text }}</p>
+
+            <div class="meta">
+                <span class="badge {{ tweet.sentiment.lower() }}">
+                    {{ tweet.sentiment }}
+                </span>
+
+                <div class="confidence-bar {{ tweet.sentiment.lower() }}">
+                    <div style="width: {{ tweet.confidence }}%"></div>
+                </div>
+
+                <small>{{ tweet.confidence }}%</small>
+            </div>
+        </div>
+        {% endfor %}
+
+    {% else %}
+    
+        <!-- ✅ FIX: No data fallback -->
+        <p style="text-align:center; margin-top:40px; font-size:18px;">
+            No tweets available
+        </p>
+
+    {% endif %}
+</div>
+
+<!-- Back Button -->
+<div class="view-btn" style="margin-top: 40px;">
+    <a href="/" class="explore-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             style="transform: rotate(180deg);">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+        <span>Back to Analysis</span>
+    </a>
+</div>
+
+<footer>
+    <div class="footer-content">
+        <span>Model: LSTM</span>
+        <span class="separator">•</span>
+        <span>Dataset: Custom Twitter Corpus</span>
+    </div>
+</footer>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.tweet-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+
+</body>
+</html>
