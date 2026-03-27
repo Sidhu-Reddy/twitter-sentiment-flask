@@ -10,10 +10,10 @@ app = Flask(__name__)
 app.secret_key = "twitter_sentiment_secret"
 
 # ================================
-# LOAD MODEL & TOKENIZER (FIXED)
+# LOAD MODEL & TOKENIZER (FINAL FIX)
 # ================================
 try:
-    model = load_model("model/sentiment_model.h5", compile=False, safe_mode=False)
+    model = load_model("model/sentiment_model.keras", compile=False)
 except Exception as e:
     print("Model loading error:", e)
     raise e
