@@ -13,7 +13,7 @@ app.secret_key = "twitter_sentiment_secret"
 # LOAD MODEL & TOKENIZER (FINAL FIX)
 # ================================
 try:
-    model = load_model("model/sentiment_model_clean.keras", compile=False)
+    model = load_model("model/sentiment_model_final.keras", compile=False)
 except Exception as e:
     print("Model loading error:", e)
     raise e
@@ -56,16 +56,18 @@ df["cleaned"] = df["tweet"].apply(clean_text)
 def predict_sentiment(text):
     seq = tokenizer.texts_to_sequences([text])
     padded = pad_sequences(seq, maxlen=30)
-    pred = float(model.predict(padded, verbose=0)[0][0])
+    pred = model.predict(padded, verbose=0)[0]
 
-    if pred >= 0.65:
-        sentiment = "Positive"
-    elif pred <= 0.35:
-        sentiment = "Negative"
+    label_index = int(np.argmax(pred))
+
+    if label_index == 0:
+               sentiment = "Negative"
+    elif label_index == 1:
+              sentiment = "Neutral"
     else:
-        sentiment = "Neutral"
+              sentiment = "Positive"
 
-    confidence = round(max(pred, 1 - pred) * 100, 1)
+    confidence = round(float(np.max(pred)) * 100, 1)
     return sentiment, confidence
 
 # ================================
