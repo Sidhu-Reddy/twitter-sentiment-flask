@@ -3,17 +3,26 @@ import pandas as pd
 import numpy as np
 import re
 import joblib
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense
 
-app = Flask(__name__)
-app.secret_key = "twitter_sentiment_secret"
-
-# ================================
-# LOAD MODEL & TOKENIZER
-# ================================
-model = load_model("model/sentiment_model.h5", compile=False)
+# load tokenizer first
 tokenizer = joblib.load("model/tokenizer.pkl")
+
+vocab_size = len(tokenizer.word_index) + 1
+
+# rebuild SAME architecture
+model = Sequential([
+    Embedding(input_dim=vocab_size, output_dim=64),
+    LSTM(64),
+    Dense(1, activation='sigmoid')
+])
+
+model.build(input_shape=(None, 30))
+
+# 🔥 THIS IS THE FIX
+model.load_weights("model/sentiment_model.h5")
 
 # ================================
 # LOAD DATASET
@@ -46,7 +55,7 @@ def clean_text(text):
 df["cleaned"] = df["tweet"].apply(clean_text)
 
 # ================================
-# PREDICTION FUNCTION (UNCHANGED)
+# PREDICTION FUNCTION
 # ================================
 def predict_sentiment(text):
     seq = tokenizer.texts_to_sequences([text])
@@ -81,9 +90,6 @@ def index():
         if data.empty:
             data = df.sample(min(10, len(df)))
 
-        # ================================
-        # 🔥 FAST + SAFE BATCH PREDICTION
-        # ================================
         texts = list(data["cleaned"])
 
         seq = tokenizer.texts_to_sequences(texts)
@@ -91,11 +97,10 @@ def index():
 
         preds = model.predict(padded, verbose=0)
 
-        # ✅ FIX SHAPE ISSUE (IMPORTANT)
         if len(preds.shape) > 1:
             preds = preds[:, 0]
 
-        preds = preds[:len(data)]  # ensure exact match
+        preds = preds[:len(data)]
 
         sentiments = []
         confidences = []

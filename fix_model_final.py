@@ -19,6 +19,6 @@ new_model.build(input_shape=(None, 30))
 new_model.set_weights(old_model.get_weights())
 
 # Save clean model
-new_model.save("model/sentiment_model_final.keras")
+new_model.save("model/sentiment_model.keras")
 
 print("✅ FINAL CLEAN MODEL CREATED")
