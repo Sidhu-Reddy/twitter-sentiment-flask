@@ -10,9 +10,14 @@ app = Flask(__name__)
 app.secret_key = "twitter_sentiment_secret"
 
 # ================================
-# LOAD MODEL & TOKENIZER
+# LOAD MODEL & TOKENIZER (FIXED)
 # ================================
-model = load_model("model/sentiment_model.h5", compile=False)
+try:
+    model = load_model("model/sentiment_model.h5", compile=False, safe_mode=False)
+except Exception as e:
+    print("Model loading error:", e)
+    raise e
+
 tokenizer = joblib.load("model/tokenizer.pkl")
 
 # ================================
@@ -46,7 +51,7 @@ def clean_text(text):
 df["cleaned"] = df["tweet"].apply(clean_text)
 
 # ================================
-# PREDICTION FUNCTION (UNCHANGED)
+# PREDICTION FUNCTION
 # ================================
 def predict_sentiment(text):
     seq = tokenizer.texts_to_sequences([text])
@@ -81,9 +86,6 @@ def index():
         if data.empty:
             data = df.sample(min(10, len(df)))
 
-        # ================================
-        # 🔥 FAST + SAFE BATCH PREDICTION
-        # ================================
         texts = list(data["cleaned"])
 
         seq = tokenizer.texts_to_sequences(texts)
@@ -91,11 +93,10 @@ def index():
 
         preds = model.predict(padded, verbose=0)
 
-        # ✅ FIX SHAPE ISSUE (IMPORTANT)
         if len(preds.shape) > 1:
             preds = preds[:, 0]
 
-        preds = preds[:len(data)]  # ensure exact match
+        preds = preds[:len(data)]
 
         sentiments = []
         confidences = []
