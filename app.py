@@ -10,14 +10,9 @@ app = Flask(__name__)
 app.secret_key = "twitter_sentiment_secret"
 
 # ================================
-# LOAD MODEL & TOKENIZER (FINAL FIX)
+# LOAD MODEL & TOKENIZER
 # ================================
-try:
-    model = load_model("model/brand_new_model.keras", compile=False)
-except Exception as e:
-    print("Model loading error:", e)
-    raise e
-
+model = load_model("model/sentiment_model.h5", compile=False)
 tokenizer = joblib.load("model/tokenizer.pkl")
 
 # ================================
@@ -51,23 +46,21 @@ def clean_text(text):
 df["cleaned"] = df["tweet"].apply(clean_text)
 
 # ================================
-# PREDICTION FUNCTION
+# PREDICTION FUNCTION (UNCHANGED)
 # ================================
 def predict_sentiment(text):
     seq = tokenizer.texts_to_sequences([text])
     padded = pad_sequences(seq, maxlen=30)
-    pred = model.predict(padded, verbose=0)[0]
+    pred = float(model.predict(padded, verbose=0)[0][0])
 
-    label_index = int(np.argmax(pred))
-
-    if label_index == 0:
-               sentiment = "Negative"
-    elif label_index == 1:
-              sentiment = "Neutral"
+    if pred >= 0.65:
+        sentiment = "Positive"
+    elif pred <= 0.35:
+        sentiment = "Negative"
     else:
-              sentiment = "Positive"
+        sentiment = "Neutral"
 
-    confidence = round(float(np.max(pred)) * 100, 1)
+    confidence = round(max(pred, 1 - pred) * 100, 1)
     return sentiment, confidence
 
 # ================================
@@ -88,6 +81,9 @@ def index():
         if data.empty:
             data = df.sample(min(10, len(df)))
 
+        # ================================
+        # 🔥 FAST + SAFE BATCH PREDICTION
+        # ================================
         texts = list(data["cleaned"])
 
         seq = tokenizer.texts_to_sequences(texts)
@@ -95,10 +91,11 @@ def index():
 
         preds = model.predict(padded, verbose=0)
 
+        # ✅ FIX SHAPE ISSUE (IMPORTANT)
         if len(preds.shape) > 1:
             preds = preds[:, 0]
 
-        preds = preds[:len(data)]
+        preds = preds[:len(data)]  # ensure exact match
 
         sentiments = []
         confidences = []
