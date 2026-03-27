@@ -13,7 +13,7 @@ app.secret_key = "twitter_sentiment_secret"
 # LOAD MODEL & TOKENIZER (FINAL FIX)
 # ================================
 try:
-    model = load_model("model/sentiment_model.keras", compile=False)
+    model = load_model("model/sentiment_model_clean.keras", compile=False)
 except Exception as e:
     print("Model loading error:", e)
     raise e
