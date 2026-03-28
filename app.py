@@ -3,32 +3,34 @@ import pandas as pd
 import numpy as np
 import re
 import joblib
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, LSTM, Dense
+import os
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# load tokenizer first
-tokenizer = joblib.load("model/tokenizer.pkl")
+app = Flask(__name__)
+app.secret_key = "twitter_sentiment_secret"
 
-vocab_size = len(tokenizer.word_index) + 1
+# ================================
+# BASE PATH (IMPORTANT FOR DEPLOYMENT)
+# ================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# rebuild SAME architecture
-model = Sequential([
-    Embedding(input_dim=vocab_size, output_dim=64),
-    LSTM(64),
-    Dense(1, activation='sigmoid')
-])
+# ================================
+# LOAD MODEL & TOKENIZER
+# ================================
+model_path = os.path.join(BASE_DIR, "model", "sentiment_model.h5")
+tokenizer_path = os.path.join(BASE_DIR, "model", "tokenizer.pkl")
 
-model.build(input_shape=(None, 30))
-
-# 🔥 THIS IS THE FIX
-model.load_weights("model/sentiment_model.h5")
+model = load_model(model_path, compile=False)
+tokenizer = joblib.load(tokenizer_path)
 
 # ================================
 # LOAD DATASET
 # ================================
+data_path = os.path.join(BASE_DIR, "dataset", "topic_sentiment_data.csv")
+
 df = pd.read_csv(
-    "dataset/topic_sentiment_data.csv",
+    data_path,
     engine="python",
     sep=",",
     quotechar='"',
@@ -177,6 +179,5 @@ def clear():
 # RUN
 # ================================
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)

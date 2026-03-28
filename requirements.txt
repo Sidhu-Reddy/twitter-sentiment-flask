@@ -1,7 +1,6 @@
-flask
-gunicorn
-numpy==1.23.5
-pandas
-scikit-learn
-joblib
-tensorflow==2.10.0
+Flask==3.0.3
+gunicorn==21.2.0
+numpy==1.26.4
+pandas==2.2.2
+tensorflow-cpu==2.15.0
+joblib==1.4.2
